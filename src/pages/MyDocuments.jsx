@@ -17,6 +17,16 @@ export default function MyDocuments() {
   const [types, setTypes] = useState([])
   const [activeSummaryModal, setActiveSummaryModal] = useState(null)
   const [summaryClosing, setSummaryClosing] = useState(false)
+  const [detailsDocument, setDetailsDocument] = useState(null)
+  const [detailsClosing, setDetailsClosing] = useState(false)
+  const [editDocument, setEditDocument] = useState(null)
+  const [editClosing, setEditClosing] = useState(false)
+  const [editSubmitting, setEditSubmitting] = useState(false)
+  const [editForm, setEditForm] = useState({
+    control_number: '',
+    document_type_id: '',
+    description: '',
+  })
   const [perPage, setPerPage] = useState(15)
 
   const totalDocuments = allDocuments.length
@@ -27,6 +37,18 @@ export default function MyDocuments() {
     if (status === 'in_transit') return 'Released'
     if (status === 'with_personnel') return 'Received'
     return status
+  }
+
+  const formatDateTime = (value) => {
+    if (!value) return '—'
+    try {
+      const d = new Date(value)
+      return Number.isNaN(d.getTime())
+        ? '—'
+        : d.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
+    } catch {
+      return '—'
+    }
   }
 
   // Client-side filtered & paginated documents
@@ -108,6 +130,75 @@ export default function MyDocuments() {
     }
     setShowContent(false)
   }, [loading])
+
+  const openDetails = (doc) => {
+    setDetailsClosing(false)
+    setDetailsDocument(doc)
+  }
+
+  const closeDetails = () => {
+    setDetailsClosing(true)
+    setTimeout(() => {
+      setDetailsClosing(false)
+      setDetailsDocument(null)
+    }, 200)
+  }
+
+  const openEdit = (doc) => {
+    setEditClosing(false)
+    setEditDocument(doc)
+    setEditForm({
+      control_number: doc.control_number || '',
+      document_type_id: doc.document_type_id || doc.document_type?.id || '',
+      description: doc.description || '',
+    })
+  }
+
+  const closeEdit = ({ force = false } = {}) => {
+    if (editSubmitting && !force) return
+    setEditClosing(true)
+    setTimeout(() => {
+      setEditClosing(false)
+      setEditDocument(null)
+      setEditForm({
+        control_number: '',
+        document_type_id: '',
+        description: '',
+      })
+      setEditSubmitting(false)
+    }, 200)
+  }
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault()
+    if (!editDocument) return
+
+    const payload = {}
+    if (editForm.control_number.trim() && editForm.control_number !== editDocument.control_number) {
+      payload.control_number = editForm.control_number.trim()
+    }
+    if (
+      String(editForm.document_type_id || '') &&
+      String(editForm.document_type_id) !== String(editDocument.document_type_id)
+    ) {
+      payload.document_type_id = Number(editForm.document_type_id)
+    }
+    payload.description = editForm.description.trim() || null
+
+    setEditSubmitting(true)
+    try {
+      const updated = await documentService.updateDocument(editDocument.id, payload)
+      setAllDocuments((prev) =>
+        prev.map((d) => (d.id === updated.id ? { ...d, ...updated } : d))
+      )
+      toast.success('Document updated')
+      closeEdit({ force: true })
+    } catch (err) {
+      toast.error(err?.message || 'Failed to update document')
+    } finally {
+      setEditSubmitting(false)
+    }
+  }
 
   return (
     <div className="page-enter">
@@ -756,22 +847,25 @@ export default function MyDocuments() {
                 </Link>
               </div>
             ) : (
-              <div className="table-responsive">
+              <div
+                className="table-responsive"
+                style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}
+              >
                 <table
                   className="table table-hover mb-0 align-middle"
                   style={{
-                    minWidth: 640,
-                    tableLayout: 'fixed',
+                    minWidth: 980,
+                    tableLayout: 'auto',
                   }}
                 >
                   <thead>
                     <tr>
                       <th style={{ width: '2.5rem' }}>#</th>
-                      <th style={{ width: '7rem' }}>Actions</th>
-                      <th style={{ width: '6rem' }}>Control number</th>
-                      <th style={{ width: '12rem' }}>Type</th>
-                      <th style={{ width: '10rem' }}>Current holder</th>
-                      <th style={{ width: '6rem' }}>Status</th>
+                      <th style={{ width: '13rem' }}>Actions</th>
+                      <th style={{ width: '9rem' }}>Control number</th>
+                      <th style={{ width: '14rem' }}>Type</th>
+                      <th style={{ width: '12rem' }}>Current holder</th>
+                      <th style={{ width: '7rem' }}>Status</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -787,39 +881,108 @@ export default function MyDocuments() {
                       return (
                         <tr key={doc.id}>
                           <td style={{ whiteSpace: 'nowrap' }}>{rowNumber}</td>
-                          <td style={{ whiteSpace: 'nowrap' }}>
-                            <Link
-                              to="/track"
-                              state={{ controlNumber: doc.control_number }}
-                              className="btn btn-sm"
-                              style={{
-                                borderRadius: 6,
-                                backgroundColor: '#0C8A3B',
-                                borderColor: '#0C8A3B',
-                                color: '#ffffff',
-                                fontFamily:
-                                  '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
-                                fontWeight: 500,
-                                fontSize: '0.8rem',
-                                paddingInline: '0.75rem',
-                                transition:
-                                  'background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease',
-                              }}
-                              onMouseEnter={(e) => {
-                                e.currentTarget.style.backgroundColor = '#0A6B2E'
-                                e.currentTarget.style.borderColor = '#0A6B2E'
-                                e.currentTarget.style.boxShadow = '0 2px 6px rgba(12, 138, 59, 0.35)'
-                                e.currentTarget.style.transform = 'translateY(-1px)'
-                              }}
-                              onMouseLeave={(e) => {
-                                e.currentTarget.style.backgroundColor = '#0C8A3B'
-                                e.currentTarget.style.borderColor = '#0C8A3B'
-                                e.currentTarget.style.boxShadow = 'none'
-                                e.currentTarget.style.transform = 'translateY(0)'
-                              }}
-                            >
-                              View logbook
-                            </Link>
+                          <td style={{ whiteSpace: 'nowrap', minWidth: '13rem' }}>
+                            <div className="d-flex flex-nowrap gap-1">
+                              <button
+                                type="button"
+                                className="btn btn-sm d-inline-flex align-items-center justify-content-center btn-outline-secondary"
+                                onClick={() => openDetails(doc)}
+                                style={{
+                                  borderRadius: 3,
+                                  borderColor: '#d1d5db',
+                                  backgroundColor: '#ffffff',
+                                  color: '#374151',
+                                  fontFamily:
+                                    '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
+                                  fontWeight: 500,
+                                  fontSize: '0.72rem',
+                                  padding: '0.25rem 0.35rem',
+                                  minWidth: 0,
+                                  flex: '0 0 auto',
+                                  transition:
+                                    'background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease',
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.backgroundColor = '#f9fafb'
+                                  e.currentTarget.style.borderColor = '#d1d5db'
+                                  e.currentTarget.style.color = '#111827'
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.backgroundColor = '#ffffff'
+                                  e.currentTarget.style.borderColor = '#d1d5db'
+                                  e.currentTarget.style.color = '#374151'
+                                }}
+                              >
+                                <i className="fas fa-eye me-1 flex-shrink-0" aria-hidden />
+                                <span className="text-truncate">Details</span>
+                              </button>
+                              <button
+                                type="button"
+                                className="btn btn-sm d-inline-flex align-items-center justify-content-center btn-outline-secondary"
+                                onClick={() => openEdit(doc)}
+                                style={{
+                                  borderRadius: 3,
+                                  borderColor: '#d1d5db',
+                                  backgroundColor: '#ffffff',
+                                  color: '#374151',
+                                  fontFamily:
+                                    '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
+                                  fontWeight: 500,
+                                  fontSize: '0.72rem',
+                                  padding: '0.25rem 0.35rem',
+                                  minWidth: 0,
+                                  flex: '0 0 auto',
+                                  transition:
+                                    'background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease',
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.backgroundColor = '#f9fafb'
+                                  e.currentTarget.style.borderColor = '#d1d5db'
+                                  e.currentTarget.style.color = '#111827'
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.backgroundColor = '#ffffff'
+                                  e.currentTarget.style.borderColor = '#d1d5db'
+                                  e.currentTarget.style.color = '#374151'
+                                }}
+                              >
+                                <i className="fas fa-edit me-1 flex-shrink-0" aria-hidden />
+                                <span className="text-truncate">Edit</span>
+                              </button>
+                              <Link
+                                to="/track"
+                                state={{ controlNumber: doc.control_number }}
+                                className="btn btn-sm d-inline-flex align-items-center justify-content-center btn-outline-secondary"
+                                style={{
+                                  borderRadius: 3,
+                                  borderColor: '#d1d5db',
+                                  backgroundColor: '#ffffff',
+                                  color: '#374151',
+                                  fontFamily:
+                                    '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
+                                  fontWeight: 500,
+                                  fontSize: '0.72rem',
+                                  padding: '0.25rem 0.35rem',
+                                  minWidth: 0,
+                                  flex: '0 0 auto',
+                                  transition:
+                                    'background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease',
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.backgroundColor = '#f9fafb'
+                                  e.currentTarget.style.borderColor = '#d1d5db'
+                                  e.currentTarget.style.color = '#111827'
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.backgroundColor = '#ffffff'
+                                  e.currentTarget.style.borderColor = '#d1d5db'
+                                  e.currentTarget.style.color = '#374151'
+                                }}
+                              >
+                                <i className="fas fa-book me-1 flex-shrink-0" aria-hidden />
+                                <span className="text-truncate">Logbook</span>
+                              </Link>
+                            </div>
                           </td>
                           <td style={{ overflow: 'hidden' }} title={doc.control_number || ''}>
                             <span
@@ -1117,6 +1280,311 @@ export default function MyDocuments() {
                   Close
                 </button>
               </div>
+            </div>
+          </div>
+        </Portal>
+      )}
+      {detailsDocument && (
+        <Portal>
+          <div
+            className="account-approvals-detail-overlay"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="mydocs-details-modal-title"
+            tabIndex={-1}
+          >
+            <div
+              className={`account-approvals-detail-backdrop modal-backdrop-animation${
+                detailsClosing ? ' exit' : ''
+              }`}
+              onClick={closeDetails}
+              aria-hidden
+            />
+            <div
+              className={`account-approvals-detail-modal modal-content-animation${
+                detailsClosing ? ' exit' : ''
+              }`}
+              style={{
+                position: 'relative',
+                width: '100%',
+                maxWidth: 560,
+                maxHeight: '90vh',
+                background: '#ffffff',
+                borderRadius: 16,
+                overflow: 'hidden',
+              }}
+            >
+              <div
+                style={{
+                  padding: '1rem 1.5rem 0.75rem',
+                  borderBottom: '1px solid #e5e7eb',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'flex-start',
+                  backgroundColor: '#f9fafb',
+                }}
+              >
+                <div>
+                  <h5
+                    id="mydocs-details-modal-title"
+                    className="mb-1"
+                    style={{
+                      fontFamily:
+                        '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
+                      fontWeight: 700,
+                      fontSize: '0.95rem',
+                      color: '#111827',
+                    }}
+                  >
+                    Document details
+                  </h5>
+                  <p
+                    className="mb-0"
+                    style={{
+                      fontFamily:
+                        '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
+                      fontSize: '0.85rem',
+                      color: '#6b7280',
+                    }}
+                  >
+                    View the registration details of this control number.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="btn-close-custom"
+                  onClick={closeDetails}
+                  aria-label="Close"
+                >
+                  ×
+                </button>
+              </div>
+              <div style={{ padding: '1.25rem 1.5rem 1.5rem' }}>
+                <div className="mb-3">
+                  <div
+                    style={{
+                      fontFamily:
+                        '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
+                      fontWeight: 700,
+                      fontSize: '1rem',
+                      color: '#111827',
+                    }}
+                  >
+                    {detailsDocument.control_number}
+                  </div>
+                  <div
+                    style={{
+                      fontFamily:
+                        '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
+                      fontSize: '0.9rem',
+                      color: '#6b7280',
+                    }}
+                  >
+                    {detailsDocument.document_type?.name || 'No document type'}
+                  </div>
+                </div>
+                <div className="row g-3">
+                  <div className="col-12 col-md-6">
+                    <div className="text-uppercase text-muted" style={{ fontSize: '0.72rem' }}>
+                      Date created
+                    </div>
+                    <div className="fw-semibold">{formatDateTime(detailsDocument.created_at)}</div>
+                  </div>
+                  <div className="col-12 col-md-6">
+                    <div className="text-uppercase text-muted" style={{ fontSize: '0.72rem' }}>
+                      Last updated
+                    </div>
+                    <div className="fw-semibold">{formatDateTime(detailsDocument.updated_at)}</div>
+                  </div>
+                  <div className="col-12">
+                    <div className="text-uppercase text-muted" style={{ fontSize: '0.72rem' }}>
+                      Description
+                    </div>
+                    <div style={{ whiteSpace: 'pre-wrap' }}>
+                      {detailsDocument.description || 'No description provided.'}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="account-approvals-detail-footer">
+                <button
+                  type="button"
+                  className="btn btn-light account-approvals-detail-close-btn"
+                  onClick={closeDetails}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </Portal>
+      )}
+
+      {editDocument && (
+        <Portal>
+          <div
+            className="account-approvals-detail-overlay"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="mydocs-edit-modal-title"
+            tabIndex={-1}
+          >
+            <div
+              className={`account-approvals-detail-backdrop modal-backdrop-animation${
+                editClosing ? ' exit' : ''
+              }`}
+              onClick={closeEdit}
+              aria-hidden
+            />
+            <div
+              className={`account-approvals-detail-modal modal-content-animation${
+                editClosing ? ' exit' : ''
+              }`}
+              style={{
+                position: 'relative',
+                width: '100%',
+                maxWidth: 560,
+                maxHeight: '90vh',
+                background: '#ffffff',
+                borderRadius: 16,
+                overflow: 'hidden',
+              }}
+            >
+              <div
+                style={{
+                  padding: '1rem 1.5rem 0.75rem',
+                  borderBottom: '1px solid #e5e7eb',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'flex-start',
+                  backgroundColor: '#f9fafb',
+                }}
+              >
+                <div>
+                  <h5
+                    id="mydocs-edit-modal-title"
+                    className="mb-1"
+                    style={{
+                      fontFamily:
+                        '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
+                      fontWeight: 700,
+                      fontSize: '0.95rem',
+                      color: '#111827',
+                    }}
+                  >
+                    Edit document
+                  </h5>
+                  <p
+                    className="mb-0"
+                    style={{
+                      fontFamily:
+                        '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
+                      fontSize: '0.85rem',
+                      color: '#6b7280',
+                    }}
+                  >
+                    Update the registration details for this control number.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="btn-close-custom"
+                  onClick={closeEdit}
+                  aria-label="Close"
+                >
+                  ×
+                </button>
+              </div>
+              <form onSubmit={handleEditSubmit}>
+                <div
+                  style={{
+                    padding: '1.25rem 1.5rem 1rem',
+                    overflowY: 'auto',
+                    maxHeight: 'calc(90vh - 110px)',
+                  }}
+                >
+                  <div className="mb-3">
+                    <label className="form-label mb-1 small">Control number</label>
+                    <input
+                      type="text"
+                      className="form-control form-control-sm"
+                      value={editForm.control_number}
+                      onChange={(e) =>
+                        setEditForm((f) => ({ ...f, control_number: e.target.value }))
+                      }
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label mb-1 small">Document type</label>
+                    <select
+                      className="form-select form-select-sm"
+                      value={editForm.document_type_id}
+                      onChange={(e) =>
+                        setEditForm((f) => ({ ...f, document_type_id: e.target.value }))
+                      }
+                      required
+                    >
+                      <option value="">Select type</option>
+                      {types.map((t) => (
+                        <option key={t.id} value={t.id}>
+                          {t.name}
+                          {t.code ? ` (${t.code})` : ''}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label mb-1 small">Description</label>
+                    <textarea
+                      className="form-control form-control-sm"
+                      rows={3}
+                      value={editForm.description}
+                      onChange={(e) =>
+                        setEditForm((f) => ({ ...f, description: e.target.value }))
+                      }
+                    />
+                  </div>
+                  <div className="row g-3">
+                    {/* Intentionally left blank to keep the edit form focused on the same core fields as registration (control number, document type, description). */}
+                  </div>
+                </div>
+                <div className="account-approvals-detail-footer">
+                  <button
+                    type="button"
+                    className="btn btn-light account-approvals-detail-close-btn"
+                    onClick={closeEdit}
+                    disabled={editSubmitting}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn btn-success"
+                    disabled={editSubmitting}
+                    style={{
+                      borderRadius: 10,
+                      fontFamily:
+                        '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
+                      fontWeight: 700,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 6,
+                      minWidth: 130,
+                    }}
+                  >
+                    {editSubmitting && (
+                      <span
+                        className="spinner-border spinner-border-sm"
+                        role="status"
+                        aria-hidden="true"
+                      />
+                    )}
+                    <span>{editSubmitting ? 'Saving…' : 'Save changes'}</span>
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         </Portal>

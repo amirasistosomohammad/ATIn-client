@@ -131,4 +131,19 @@ export const documentService = {
     if (!res.ok) throw new Error(data.message || 'Failed to update document type')
     return data
   },
+
+  async updateDocument(id, payload) {
+    const res = await fetch(`${API_BASE}/documents/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        ...getAuthHeaders(),
+      },
+      body: JSON.stringify(payload),
+    })
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok) throw new Error(data.message || 'Failed to update document')
+    return data
+  },
 }
