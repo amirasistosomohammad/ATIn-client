@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react'
-import { normalizeLogoUrl } from '../services/apiClient'
+import { buildStorageUrl, normalizeLogoUrl } from '../services/apiClient'
 import systemLogoFallback from '../assets/system_logo.png'
 
 const API_BASE = import.meta.env.VITE_LARAVEL_API || 'http://localhost:8000/api'
@@ -32,8 +32,13 @@ export function BrandingProvider({ children }) {
       })
       if (!res.ok) return
       const data = await res.json()
-      const logoBase = data?.logo_url ? normalizeLogoUrl(data.logo_url) : null
-      const bgBase = data?.auth_background_url ? normalizeLogoUrl(data.auth_background_url) : null
+      // Prefer storage path so frontend builds URL from API base (works in production with /atin-server etc.)
+      const logoBase = data?.logo_path
+        ? buildStorageUrl(data.logo_path)
+        : (data?.logo_url ? normalizeLogoUrl(data.logo_url) : null)
+      const bgBase = data?.auth_background_path
+        ? buildStorageUrl(data.auth_background_path)
+        : (data?.auth_background_url ? normalizeLogoUrl(data.auth_background_url) : null)
       setBranding({
         appName: data?.app_name || 'ATIn e-Track System',
         logoUrl: logoBase ? `${logoBase}?t=${Date.now()}` : null,
@@ -56,14 +61,10 @@ export function BrandingProvider({ children }) {
     const handler = (e) => {
       const d = e?.detail || {}
       const next = {}
-      if (d.logoUrl != null && d.logoUrl !== '') {
-        const base = normalizeLogoUrl(d.logoUrl)
-        if (base) next.logoUrl = `${base}?t=${Date.now()}`
-      }
-      if (d.authBackgroundUrl != null && d.authBackgroundUrl !== '') {
-        const base = normalizeLogoUrl(d.authBackgroundUrl)
-        if (base) next.authBackgroundUrl = `${base}?t=${Date.now()}`
-      }
+      const logoBase = d.logo_path ? buildStorageUrl(d.logo_path) : (d.logoUrl ? normalizeLogoUrl(d.logoUrl) : null)
+      if (logoBase) next.logoUrl = `${logoBase}?t=${Date.now()}`
+      const bgBase = d.auth_background_path ? buildStorageUrl(d.auth_background_path) : (d.authBackgroundUrl ? normalizeLogoUrl(d.authBackgroundUrl) : null)
+      if (bgBase) next.authBackgroundUrl = `${bgBase}?t=${Date.now()}`
       if (Object.keys(next).length) {
         setBranding((prev) => ({ ...prev, ...next }))
         setBrandingLoaded(true)

@@ -1,9 +1,21 @@
 const API_BASE = import.meta.env.VITE_LARAVEL_API || 'http://localhost:8000/api'
 
-/** Base URL for storage (logo, etc.) – API origin without /api so relative paths resolve to the backend. */
+/** Base URL for storage (logo, etc.) – API origin without trailing /api. Same base as API calls so it works in production with path prefix (e.g. /atin-server). */
 export function getStorageOrigin() {
   const base = typeof API_BASE === 'string' && API_BASE ? API_BASE.replace(/\/api\/?$/i, '') : ''
   return base || (typeof window !== 'undefined' ? window.location.origin : '')
+}
+
+/**
+ * Build full URL for a storage path. Use this in production so image URLs use the same
+ * base as API (e.g. https://client.example.com/atin-server/api/storage/logos/x.jpg).
+ */
+export function buildStorageUrl(storagePath) {
+  if (storagePath == null || String(storagePath).trim() === '') return null
+  const path = String(storagePath).trim().replace(/^\/+/, '')
+  if (!path) return null
+  const origin = getStorageOrigin()
+  return origin ? `${origin}/api/storage/${path}` : null
 }
 
 export function normalizeLogoUrl(url) {

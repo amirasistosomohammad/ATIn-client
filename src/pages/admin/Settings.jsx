@@ -14,7 +14,7 @@ import {
 } from 'react-icons/fa'
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-import { apiRequest, apiRequestFormData, getAuthToken, normalizeLogoUrl } from '../../services/apiClient'
+import { apiRequest, apiRequestFormData, getAuthToken, buildStorageUrl, normalizeLogoUrl } from '../../services/apiClient'
 import { showToast } from '../../services/notificationService'
 import './Settings.css'
 
@@ -44,8 +44,10 @@ export default function Settings() {
   const [systemSettings, setSystemSettings] = useState({
     app_name: '',
     logo_url: null,
+    logo_path: null,
     logo_updated_at: null,
     auth_background_url: null,
+    auth_background_path: null,
     auth_background_updated_at: null,
   })
   const [systemSettingsLoading, setSystemSettingsLoading] = useState(true)
@@ -165,8 +167,10 @@ export default function Settings() {
         setSystemSettings({
           app_name: res?.app_name || '',
           logo_url: res?.logo_url || null,
+          logo_path: res?.logo_path || null,
           logo_updated_at: null,
           auth_background_url: res?.auth_background_url || null,
+          auth_background_path: res?.auth_background_path || null,
           auth_background_updated_at: null,
         })
         setSystemForm({
@@ -205,7 +209,9 @@ export default function Settings() {
         ...prev,
         app_name: res?.app_name || systemForm.app_name,
         logo_url: res?.logo_url ?? prev.logo_url,
+        logo_path: res?.logo_path ?? prev.logo_path,
         auth_background_url: res?.auth_background_url ?? prev.auth_background_url,
+        auth_background_path: res?.auth_background_path ?? prev.auth_background_path,
       }))
       setSystemForm({
         app_name: res?.app_name || systemForm.app_name,
@@ -244,13 +250,15 @@ export default function Settings() {
         formData: fd,
         auth: true,
       })
+      const newLogoPath = res?.logo_path ?? null
       const newLogoUrl = res?.logo_url ?? null
       setSystemSettings((prev) => ({
         ...prev,
+        logo_path: newLogoPath ?? prev.logo_path,
         logo_url: newLogoUrl ?? prev.logo_url,
         logo_updated_at: Date.now(),
       }))
-      window.dispatchEvent(new CustomEvent('atin-settings-updated', { detail: { logoUrl: newLogoUrl } }))
+      window.dispatchEvent(new CustomEvent('atin-settings-updated', { detail: { logo_path: newLogoPath, logoUrl: newLogoUrl } }))
       showToast.success('Logo updated successfully.')
     } catch (err) {
       const msg = err?.data?.errors?.logo?.[0] || err?.message || 'Failed to upload logo.'
@@ -281,13 +289,15 @@ export default function Settings() {
         formData: fd,
         auth: true,
       })
+      const newBgPath = res?.auth_background_path ?? null
       const newBgUrl = res?.auth_background_url ?? null
       setSystemSettings((prev) => ({
         ...prev,
+        auth_background_path: newBgPath ?? prev.auth_background_path,
         auth_background_url: newBgUrl ?? prev.auth_background_url,
         auth_background_updated_at: Date.now(),
       }))
-      window.dispatchEvent(new CustomEvent('atin-settings-updated', { detail: { authBackgroundUrl: newBgUrl } }))
+      window.dispatchEvent(new CustomEvent('atin-settings-updated', { detail: { auth_background_path: newBgPath, authBackgroundUrl: newBgUrl } }))
       showToast.success('Login & register background updated.')
     } catch (err) {
       const msg = err?.data?.errors?.background?.[0] || err?.message || 'Failed to upload background image.'
@@ -785,10 +795,10 @@ export default function Settings() {
                       <label className="system-settings-label">Logo</label>
                       <div className="system-settings-logo-row">
                         <div className="system-settings-logo-preview">
-                          {systemSettings.logo_url ? (
+                          {(systemSettings.logo_path || systemSettings.logo_url) ? (
                             <img
                               key={String(systemSettings.logo_updated_at ?? 'init')}
-                              src={`${normalizeLogoUrl(systemSettings.logo_url) || systemSettings.logo_url}?t=${systemSettings.logo_updated_at ?? 'init'}`}
+                              src={`${systemSettings.logo_path ? buildStorageUrl(systemSettings.logo_path) : (normalizeLogoUrl(systemSettings.logo_url) || systemSettings.logo_url)}?t=${systemSettings.logo_updated_at ?? 'init'}`}
                               alt="App logo"
                             />
                           ) : (
@@ -812,7 +822,7 @@ export default function Settings() {
                                 <FaSpinner className="spinner" aria-hidden="true" />
                                 <span>Uploading…</span>
                               </>
-                            ) : systemSettings.logo_url ? (
+                            ) : (systemSettings.logo_path || systemSettings.logo_url) ? (
                               'Change logo'
                             ) : (
                               'Upload logo'
@@ -829,10 +839,10 @@ export default function Settings() {
                       <label className="system-settings-label">Login &amp; register background</label>
                       <div className="system-settings-logo-row">
                         <div className="system-settings-logo-preview system-settings-bg-preview">
-                          {systemSettings.auth_background_url ? (
+                          {(systemSettings.auth_background_path || systemSettings.auth_background_url) ? (
                             <img
                               key={String(systemSettings.auth_background_updated_at ?? 'init')}
-                              src={`${normalizeLogoUrl(systemSettings.auth_background_url) || systemSettings.auth_background_url}?t=${systemSettings.auth_background_updated_at ?? 'init'}`}
+                              src={`${systemSettings.auth_background_path ? buildStorageUrl(systemSettings.auth_background_path) : (normalizeLogoUrl(systemSettings.auth_background_url) || systemSettings.auth_background_url)}?t=${systemSettings.auth_background_updated_at ?? 'init'}`}
                               alt="Auth background"
                             />
                           ) : (
@@ -856,7 +866,7 @@ export default function Settings() {
                                 <FaSpinner className="spinner" aria-hidden="true" />
                                 <span>Uploading…</span>
                               </>
-                            ) : systemSettings.auth_background_url ? (
+                            ) : (systemSettings.auth_background_path || systemSettings.auth_background_url) ? (
                               'Change background'
                             ) : (
                               'Upload background'
