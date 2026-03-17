@@ -206,7 +206,7 @@ export default function TrackByControlNumber() {
                   color: titleColor,
                 }}
               >
-                Track by control number
+                Document tracking
               </h2>
               <p
                 className="mb-0"
@@ -216,7 +216,7 @@ export default function TrackByControlNumber() {
                   color: subtitleColor,
                 }}
               >
-                Search by control number to view document details, status, and digital logbook.
+                Search by control number to review status and view the official document logbook.
               </p>
             </div>
           </div>

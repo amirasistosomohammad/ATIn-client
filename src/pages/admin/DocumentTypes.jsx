@@ -259,7 +259,7 @@ export default function DocumentTypes() {
                   color: '#1f2933',
                 }}
               >
-                Document types
+                Document type registry
               </h2>
               <p
                 className="mb-0"
@@ -270,7 +270,7 @@ export default function DocumentTypes() {
                   color: '#6b7280',
                 }}
               >
-                Configure the standard document types used across the agency.
+                Maintain the reference registry of document types used across the agency.
               </p>
             </div>
             <div className="mt-3 mt-md-0 ms-md-auto">

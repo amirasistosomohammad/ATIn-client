@@ -227,12 +227,12 @@ export default function Profile() {
           <FaUser className="profile-settings-avatar-placeholder" />
         </div>
         <div className="system-settings-header-text">
-          <h1 className="system-settings-header-title">Profile</h1>
+          <h1 className="system-settings-header-title">My profile</h1>
           <p className="system-settings-header-subtitle">
             {user?.name || 'User'} • {user?.email || '—'}
           </p>
           <p className="system-settings-header-desc">
-            Review and maintain your account information and access credentials.
+            Review and maintain your account information and access credentials for system access.
           </p>
         </div>
       </div>

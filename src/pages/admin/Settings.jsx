@@ -539,13 +539,11 @@ export default function Settings() {
           <FaCog className="system-settings-header-gear" aria-hidden="true" />
         </div>
         <div className="system-settings-header-text">
-          <h1 className="system-settings-header-title">Administrator Settings</h1>
+          <h1 className="system-settings-header-title">System configuration</h1>
           <p className="system-settings-header-subtitle">
             {user?.name || 'User'} • {roleLabel}
           </p>
-          <p className="system-settings-header-desc">
-            System maintenance and security settings
-          </p>
+          <p className="system-settings-header-desc">Administrative configuration, security, and data protection</p>
         </div>
       </div>
 

@@ -22,26 +22,26 @@ const Sidebar = ({ onCloseSidebar }) => {
 
   const menuSections = [
     {
-      heading: 'CORE',
+      heading: 'OVERVIEW',
       items: [
-        { icon: 'fas fa-tachometer-alt', label: 'Dashboard', href: '/dashboard' },
-        { icon: 'fas fa-search', label: 'Track by Control Number', href: '/track' },
+        { icon: 'fas fa-tachometer-alt', label: 'System Dashboard', href: '/dashboard' },
+        { icon: 'fas fa-search', label: 'Document Tracking', href: '/track' },
       ],
     },
     // Personnel documents area (create and manage control numbers)
     ...(!isAdmin
       ? [
           {
-            heading: 'DOCUMENTS',
+            heading: 'DOCUMENT REGISTRY',
             items: [
-              { icon: 'fas fa-folder-open', label: 'My Documents', href: '/documents' },
-              { icon: 'fas fa-plus-circle', label: 'Register Control Number', href: '/documents/register' },
+              { icon: 'fas fa-folder-open', label: 'Registered Documents', href: '/documents' },
+              { icon: 'fas fa-plus-circle', label: 'Register Document', href: '/documents/register' },
             ],
           },
           {
-            heading: 'ACCOUNT',
+            heading: 'ACCOUNT SERVICES',
             items: [
-              { icon: 'fas fa-user', label: 'Profile', href: '/profile' },
+              { icon: 'fas fa-user', label: 'My Profile', href: '/profile' },
             ],
           },
         ]
@@ -49,17 +49,17 @@ const Sidebar = ({ onCloseSidebar }) => {
     ...(isAdmin
       ? [
           {
-            heading: 'ADMIN',
+            heading: 'ADMINISTRATION',
             items: [
-              { icon: 'fas fa-users', label: 'User management', href: '/admin/users' },
-              { icon: 'fas fa-list-alt', label: 'Document types', href: '/admin/document-types' },
-              { icon: 'fas fa-cog', label: 'Settings', href: '/admin/settings' },
+              { icon: 'fas fa-users', label: 'User Accounts', href: '/admin/users' },
+              { icon: 'fas fa-list-alt', label: 'Document Type Registry', href: '/admin/document-types' },
+              { icon: 'fas fa-cog', label: 'System Configuration', href: '/admin/settings' },
             ],
           },
           {
-            heading: 'REPORTS',
+            heading: 'REPORTING',
             items: [
-              { icon: 'fas fa-chart-bar', label: 'Reports', href: '/reports' },
+              { icon: 'fas fa-chart-bar', label: 'Management Reports', href: '/reports' },
             ],
           },
         ]

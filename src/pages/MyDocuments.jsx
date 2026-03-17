@@ -236,7 +236,7 @@ export default function MyDocuments() {
                     color: '#1f2933',
                   }}
                 >
-                  My documents
+                  Registered documents
                 </h2>
                 <p
                   className="mb-0"
@@ -247,7 +247,7 @@ export default function MyDocuments() {
                     color: '#6b7280',
                   }}
                 >
-                  Loading your registered control numbers&hellip;
+                  Loading your registered document records&hellip;
                 </p>
               </div>
             </div>
@@ -316,7 +316,7 @@ export default function MyDocuments() {
                     color: '#1f2933',
                   }}
                 >
-                  My documents
+                  Registered documents
                 </h2>
                 <p
                   className="mb-0"
@@ -327,7 +327,7 @@ export default function MyDocuments() {
                     color: '#6b7280',
                   }}
                 >
-                  Control numbers you registered. Click a row to track and view logbook details.
+                  Document records you registered. Use Actions to review details or open the logbook.
                 </p>
               </div>
             </div>

@@ -95,7 +95,7 @@ export default function RegisterControlNumber() {
                     color: '#1f2933',
                   }}
                 >
-                  Register control number
+                  Register document
                 </h2>
                 <p
                   className="mb-0"
@@ -106,7 +106,7 @@ export default function RegisterControlNumber() {
                     color: '#6b7280',
                   }}
                 >
-                  Preparing document types and form details&hellip;
+                  Preparing document type registry and form details&hellip;
                 </p>
               </div>
             </div>
@@ -181,7 +181,7 @@ export default function RegisterControlNumber() {
                   color: '#1f2933',
                 }}
               >
-                Register control number
+                Register document
               </h2>
               <p
                 className="mb-0"
@@ -191,7 +191,7 @@ export default function RegisterControlNumber() {
                   color: '#6b7280',
                 }}
               >
-                Create a new control number. Specify the official reference and document type as used in agency records.
+                Register a document record. Provide the official control number and document type used in agency records.
               </p>
             </div>
           </div>

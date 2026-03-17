@@ -106,7 +106,7 @@ export default function Dashboard() {
                     color: titleColor,
                   }}
                 >
-                  Dashboard
+                  System dashboard
                 </h2>
                 <p
                   className="mb-0"
@@ -116,7 +116,7 @@ export default function Dashboard() {
                     color: subtitleColor,
                   }}
                 >
-                  Preparing your overview&hellip;
+                  Preparing your system overview&hellip;
                 </p>
               </div>
             </div>
@@ -180,7 +180,7 @@ export default function Dashboard() {
                   color: titleColor,
                 }}
               >
-                System overview
+                System dashboard
               </h2>
               <p
                 className="mb-0"
@@ -190,7 +190,7 @@ export default function Dashboard() {
                   color: subtitleColor,
                 }}
               >
-                Monitor procurement documents, personnel activity, and administrative settings.
+                Monitor document activity, personnel transactions, and administrative controls.
               </p>
             </div>
           </div>
@@ -551,7 +551,7 @@ export default function Dashboard() {
                   color: titleColor,
                 }}
               >
-                Dashboard
+                System dashboard
               </h2>
               <p
                 className="mb-0"
@@ -561,7 +561,7 @@ export default function Dashboard() {
                   color: subtitleColor,
                 }}
               >
-                Welcome back, {firstName}. View your documents and current holdings at a glance.
+                Welcome back, {firstName}. Review your registered documents and current custody status.
               </p>
             </div>
           </div>

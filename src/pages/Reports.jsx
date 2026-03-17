@@ -368,7 +368,7 @@ export default function Reports() {
                     color: '#1f2933',
                   }}
                 >
-                  Reports
+                  Management reports
                 </h2>
                 <p
                   className="mb-0"
@@ -379,7 +379,7 @@ export default function Reports() {
                     color: '#6b7280',
                   }}
                 >
-                  Loading tracking, document history, and accountability reports&hellip;
+                  Loading management reporting modules&hellip;
                 </p>
               </div>
             </div>
@@ -448,7 +448,7 @@ export default function Reports() {
                     color: '#1f2933',
                   }}
                 >
-                  Reports
+                  Management reports
                 </h2>
                 <p
                   className="mb-0"
@@ -459,7 +459,7 @@ export default function Reports() {
                     color: '#6b7280',
                   }}
                 >
-                  Export-ready tracking, document history, and accountability views.
+                  Export-ready tracking, document history, and accountability registers.
                 </p>
               </div>
               <div className="d-flex flex-wrap gap-2 mt-2 mt-md-0">

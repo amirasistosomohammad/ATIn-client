@@ -253,7 +253,7 @@ export default function UserManagement() {
                   color: '#1f2933',
                 }}
               >
-                User management
+                User accounts
               </h2>
               <p
                 className="mb-0"
@@ -264,7 +264,7 @@ export default function UserManagement() {
                   color: '#6b7280',
                 }}
               >
-                View and manage all registered users across the system.
+                Review and administer registered system user accounts.
               </p>
             </div>
           </div>
