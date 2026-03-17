@@ -6,7 +6,7 @@ import { showAlert } from '../../services/notificationService'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import backgroundImage from '../../assets/background-image.png'
-import systemLogo from '../../assets/system_logo.png'
+import { useBranding } from '../../context/BrandingContext'
 
 const FOOTER_HEIGHT_PX = 60
 const theme = {
@@ -21,13 +21,14 @@ const theme = {
   borderColor: '#e0e6e0',
 }
 
-const BRAND_NAME = 'ATIn e-Track System'
 const FOOTER_TAGLINE = 'Agricultural Training Institute — Regional Training Center IX'
 
 export default function Login() {
+  const { logoUrl, appName, authBackgroundUrl, brandingLoaded } = useBranding()
   const [showPassword, setShowPassword] = useState(false)
   const [form, setForm] = useState({ email: '', password: '' })
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [inactiveInfo, setInactiveInfo] = useState(null) // { name, email, remarks, message }
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024)
 
   const navigate = useNavigate()
@@ -62,10 +63,76 @@ export default function Login() {
       toast.success('Login successful')
       navigate(from, { replace: true })
     } catch (error) {
-      toast.error(
-        error?.message || 'Please check your credentials and try again.',
-        { position: 'top-right', autoClose: 3000, hideProgressBar: false }
-      )
+      const backendStatus = error?.code || error?.data?.status || error?.data?.code
+      const message = (error?.message || '').toLowerCase()
+      const looksInactive =
+        error?.code === 'ACCOUNT_INACTIVE' ||
+        backendStatus === 'inactive' ||
+        backendStatus === 'deactivated' ||
+        message.includes('deactivated') ||
+        message.includes('disabled') ||
+        message.includes('inactive')
+
+      if (looksInactive) {
+        const backendUser = error.user || error.data?.user || null
+
+        // Backend sends deactivation_remarks on 403; authService also sets error.remarks.
+        let backendRemarks =
+          (error.remarks ?? error.data?.deactivation_remarks ?? error.data?.last_admin_remarks ?? error.data?.remarks) ?? null
+        if (backendRemarks != null) backendRemarks = (String(backendRemarks).trim() || null)
+
+        // Common Laravel pattern: message + errors.email[0]
+        const emailError =
+          Array.isArray(error.data?.errors?.email) && error.data.errors.email.length > 0
+            ? String(error.data.errors.email[0])
+            : null
+
+        // Prefer a dedicated remark; otherwise, use the first email error if it
+        // adds extra detail beyond the main message.
+        const baseMessage =
+          error?.message ||
+          error.data?.message ||
+          'Your account is currently deactivated and cannot be used to sign in.'
+
+        if (!backendRemarks && emailError) {
+          // Avoid duplicating the same sentence twice.
+          backendRemarks =
+            emailError.trim() === baseMessage.trim() ? null : emailError
+        }
+
+        // Frontend fallback: if backend did not return remarks, look up
+        // what the admin last entered for this email from localStorage.
+        if (!backendRemarks) {
+          try {
+            const key = 'deactivationRemarksByEmail'
+            const raw = window.localStorage.getItem(key)
+            if (raw) {
+              const map = JSON.parse(raw)
+              const emailKey = (backendUser?.email || form.email || '').toLowerCase()
+              const stored = map[emailKey] || map[backendUser?.email] || null
+              if (stored?.remarks) {
+                backendRemarks = stored.remarks
+              }
+            }
+          } catch {
+            // ignore storage errors
+          }
+        }
+
+        setInactiveInfo({
+          name: backendUser?.name || form.email,
+          email: backendUser?.email || form.email,
+          message: baseMessage,
+          remarks:
+            backendRemarks ||
+            'No additional remarks were recorded at the time this account was deactivated.',
+        })
+      } else {
+        toast.error(
+          error?.message || 'Please check your credentials and try again.',
+          { position: 'top-right', autoClose: 3000, hideProgressBar: false }
+        )
+      }
     } finally {
       setIsSubmitting(false)
     }
@@ -109,7 +176,7 @@ export default function Login() {
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundImage: `url(${backgroundImage})`,
+          backgroundImage: `url(${authBackgroundUrl || backgroundImage})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
@@ -149,15 +216,24 @@ export default function Login() {
           }}
         >
           <div className="text-center mb-4">
-            <img
-              src={systemLogo}
-              alt={BRAND_NAME}
-              style={{
-                width: `${logoSize}px`,
-                height: `${logoSize}px`,
-                objectFit: 'contain',
-              }}
-            />
+            {brandingLoaded ? (
+              <img
+                key={logoUrl}
+                src={logoUrl}
+                alt={appName}
+                className="branding-fade-in"
+                style={{
+                  width: `${logoSize}px`,
+                  height: `${logoSize}px`,
+                  objectFit: 'contain',
+                }}
+              />
+            ) : (
+              <div
+                className="branding-skeleton-logo"
+                style={{ width: logoSize, height: logoSize, margin: '0 auto' }}
+              />
+            )}
           </div>
 
           <h5
@@ -171,7 +247,14 @@ export default function Login() {
               lineHeight: 1.2,
             }}
           >
-            Log in to your account
+            {brandingLoaded ? (
+              <span className="branding-fade-in">{appName}</span>
+            ) : (
+              <span
+                className="branding-skeleton-text"
+                style={{ display: 'inline-block', width: 220, height: 18 }}
+              />
+            )}
           </h5>
 
           <form onSubmit={handleSubmit}>
@@ -280,13 +363,12 @@ export default function Login() {
             </div>
 
             <div className="text-end mb-3">
-              <a
-                href="#"
+              <Link
+                to="/forgot-password"
                 className="login-form-link login-form-link--forgot"
-                onClick={(e) => e.preventDefault()}
               >
                 Forgot Password?
-              </a>
+              </Link>
             </div>
 
             <button
@@ -366,7 +448,7 @@ export default function Login() {
               color: theme.textSecondary,
             }}
           >
-            © {new Date().getFullYear()} {BRAND_NAME}. {FOOTER_TAGLINE}. All rights reserved.
+            © {new Date().getFullYear()} {appName}. {FOOTER_TAGLINE}. All rights reserved.
           </p>
         </div>
       </footer>
@@ -433,6 +515,158 @@ export default function Login() {
           }
         }
       `}</style>
+
+      {inactiveInfo && (
+        <div
+          className="account-approvals-detail-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="inactive-account-modal-title"
+          tabIndex={-1}
+        >
+          <div
+            className="account-approvals-detail-backdrop modal-backdrop-animation"
+            onClick={() => setInactiveInfo(null)}
+            aria-hidden
+          />
+          <div
+            className="account-approvals-detail-modal modal-content-animation"
+            style={{
+              position: 'relative',
+              width: '100%',
+              maxWidth: 480,
+              maxHeight: '90vh',
+              background: '#ffffff',
+              borderRadius: 16,
+              overflow: 'hidden',
+            }}
+          >
+            <div
+              style={{
+                padding: '1rem 1.5rem 0.75rem',
+                borderBottom: '1px solid #e5e7eb',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'flex-start',
+                backgroundColor: '#f9fafb',
+              }}
+            >
+              <div>
+                <h5
+                  id="inactive-account-modal-title"
+                  className="mb-1"
+                  style={{
+                    fontFamily:
+                      '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
+                    fontWeight: 700,
+                    fontSize: '0.95rem',
+                    color: '#111827',
+                  }}
+                >
+                  Account access unavailable
+                </h5>
+                <p
+                  className="mb-0"
+                  style={{
+                    fontFamily:
+                      '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
+                    fontSize: '0.85rem',
+                    color: '#6b7280',
+                  }}
+                >
+                  The account below is currently deactivated by an administrator.
+                </p>
+              </div>
+              <button
+                type="button"
+                className="btn-close-custom"
+                onClick={() => setInactiveInfo(null)}
+                aria-label="Close"
+              >
+                ×
+              </button>
+            </div>
+
+            <div style={{ padding: '1.25rem 1.5rem 1.5rem' }}>
+              <div className="mb-3">
+                <div
+                  className="fw-semibold"
+                  style={{
+                    fontFamily:
+                      '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
+                    color: '#111827',
+                  }}
+                >
+                  {inactiveInfo.name}
+                </div>
+                <div
+                  className="text-muted small"
+                  style={{
+                    fontFamily:
+                      '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
+                  }}
+                >
+                  {inactiveInfo.email}
+                </div>
+              </div>
+
+              <div
+                className="p-3 rounded-3"
+                style={{
+                  border: '1px solid #e5e7eb',
+                  backgroundColor: '#ffffff',
+                }}
+              >
+                <div
+                  style={{
+                    fontFamily:
+                      '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
+                    fontSize: '0.9rem',
+                    color: '#374151',
+                  }}
+                >
+                  {inactiveInfo.message}
+                </div>
+                <div
+                  className="mt-3"
+                  style={{
+                    borderTop: '1px dashed #e5e7eb',
+                    paddingTop: '0.75rem',
+                  }}
+                >
+                  <div
+                    className="text-uppercase text-muted mb-1"
+                    style={{ fontSize: '0.72rem' }}
+                  >
+                    Admin remarks
+                  </div>
+                  <div
+                    style={{
+                      fontFamily:
+                        '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
+                      fontSize: '0.9rem',
+                      color: '#4b5563',
+                      whiteSpace: 'pre-wrap',
+                    }}
+                  >
+                    {inactiveInfo.remarks}
+                  </div>
+                </div>
+              </div>
+
+              <div className="account-approvals-detail-footer">
+                <button
+                  type="button"
+                  className="btn btn-light account-approvals-detail-close-btn"
+                  onClick={() => setInactiveInfo(null)}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

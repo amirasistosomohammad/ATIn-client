@@ -4,6 +4,7 @@
 
 :root {
  /* DATravelApp Color Scheme - Deep Green & Amber Yellow */
+ --toastify-z-index: 99999;
  --primary-color: #0d7a3a; /* Deep Green */
  --primary-dark: #0a5f2d; /* Darker green */
  --primary-light: #0f9a4a; /* Lighter green accent */
@@ -26,7 +27,7 @@
  --sidebar-text: #f4f7fb;
  --sidebar-hover: rgba(248, 194, 2, 0.12);
  --sidebar-active: var(--accent-color);
- --sidebar-border: rgba(248, 194, 2, 0.25);
+ --sidebar-border: rgba(0, 0, 0, 0.25);
  --sidebar-shadow: rgba(0, 0, 0, 0.25);
 
  /* Footer Colors */
@@ -51,6 +52,9 @@
  --input-bg: #ffffff;
  --input-text: var(--text-primary);
  --input-border: #d5dbe6;
+
+ /* Layout: same left/right spacing as sidebar nav links */
+ --layout-edge-spacing: 1.5rem;
 }
 
 /* ===== MAIN LAYOUT CONTAINER ===== */
@@ -69,11 +73,49 @@ html body {
  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
  sans-serif !important;
  font-optical-sizing: auto;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+ -webkit-font-smoothing: antialiased;
+ -moz-osx-font-smoothing: grayscale;
  margin: 0;
  padding: 0;
  background-color: var(--background-light);
+}
+
+/* ===== BRANDING SKELETONS & TRANSITIONS ===== */
+.branding-skeleton-logo,
+.branding-skeleton-text {
+  background: linear-gradient(90deg, #e5e7eb, #f3f4f6, #e5e7eb);
+  background-size: 200% 100%;
+  animation: brandingSkeletonShimmer 1.2s ease-in-out infinite;
+}
+
+.branding-skeleton-logo {
+  border-radius: 999px;
+}
+
+.branding-skeleton-text {
+  border-radius: 999px;
+}
+
+@keyframes brandingSkeletonShimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+.branding-fade-in {
+  opacity: 0;
+  transform: translateY(4px);
+  animation: brandingFadeIn 0.35s ease-out forwards;
+}
+
+@keyframes brandingFadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 body,
@@ -94,42 +136,85 @@ label {
  sans-serif;
 }
 
-/* ===== TOPBAR STYLES ===== */
+/* ===== TOPBAR STYLES (old alignment, margins, logo/text sizes) ===== */
 .sb-topnav {
  background: var(--topbar-bg) !important;
  border-bottom: none !important;
  box-shadow: 0 4px 20px var(--topbar-shadow);
- z-index: 1039;
+ z-index: 2060;
  position: fixed;
  top: 0;
  right: 0;
  left: 0;
  height: 60px;
  overflow: visible !important;
+ padding-left: var(--layout-edge-spacing);
+ padding-right: var(--layout-edge-spacing);
 }
 
 .sb-topnav .navbar-brand {
  color: var(--topbar-text) !important;
  font-weight: 700;
- padding: 0.5rem 1rem;
+ padding: 0.5rem 0;
+ padding-right: 0;
  font-size: 1.1rem;
  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+ margin-right: 0;
 }
 
-/* Simplified Hamburger Menu - No border, clean design */
+/* ATIn topbar: logo + brand text (spacing and border like DATravelApp reference) */
+.sb-topnav-logo-circle {
+ width: 40px;
+ height: 40px;
+ border-radius: 50%;
+ overflow: hidden;
+ border: 2px solid var(--accent-color);
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ background: #fff;
+}
+.sb-topnav-logo-img {
+ width: 100%;
+ height: 100%;
+ object-fit: cover;
+}
+.sb-topnav-logo-gap { margin-right: 0.875rem; }
+.sb-topnav-brand-name { font-weight: 700; font-size: 1rem; line-height: 1.2; color: #fff; }
+.sb-topnav-brand-tagline {
+ font-size: 0.75rem;
+ line-height: 1.2;
+ color: rgba(255, 255, 255, 0.75);
+ font-weight: 400;
+}
+.sb-topnav-user-icon-circle {
+ width: 32px;
+ height: 32px;
+ border-radius: 50%;
+ border: 2px solid rgba(255, 255, 255, 0.9);
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ background: rgba(255, 255, 255, 0.15);
+}
+.sb-topnav-user-icon-inner { display: flex; align-items: center; justify-content: center; }
+.sb-topnav-user-icon { color: #fff; font-size: 0.875rem; }
+
+/* Hamburger - spacing like repo: clear gap between logo/text block and menu */
 .sb-topnav .btn-link {
  color: var(--topbar-text) !important;
  border-radius: 6px;
  transition: all 0.3s ease;
- padding: 0.6rem;
- margin: 0 0.25rem;
+ padding: 0.5rem 0.75rem;
+ margin-left: 1rem;
+ margin-right: 0;
  background: transparent !important;
  border: none !important;
 }
 
-@media (min-width: 1006px) {
+@media (min-width: 992px) {
  .sb-topnav .btn-link {
- margin: 0 3rem;
+ margin-left: 2.5rem;
  }
 }
 
@@ -150,7 +235,7 @@ label {
 
 .sb-topnav .form-control::placeholder {
  color: #6b7280;
-  font-weight: 500;
+ font-weight: 500;
 }
 
 .sb-topnav .form-control:focus {
@@ -191,7 +276,7 @@ label {
  position: absolute !important;
  right: 0 !important;
  top: 100% !important;
- z-index: 1050 !important;
+ z-index: 2080 !important;
  min-width: 200px;
  opacity: 0;
  transform: translateY(-10px) scale(0.95);
@@ -296,6 +381,7 @@ label {
  overflow-y: auto;
  overflow-x: hidden; /* Prevent horizontal scrollbar */
  padding: 1rem 0;
+ padding-right: 4px; /* Room for hover translate so background is not clipped */
 }
 
 .sb-sidenav-menu-heading {
@@ -313,6 +399,12 @@ label {
  width: 100%;
  padding: 0;
  margin: 0;
+ flex-direction: column;
+}
+
+.sb-sidenav .nav-item {
+ width: 100%;
+ flex: 0 0 auto;
 }
 
 .sb-sidenav .nav-link {
@@ -321,6 +413,7 @@ label {
  border-left: 4px solid transparent;
  transition: all 0.3s ease;
  width: 100%;
+ min-width: 0;
  margin: 0;
  display: flex;
  align-items: center;
@@ -375,6 +468,14 @@ label {
 .sb-sidenav .nav-link.active .sb-nav-link-icon {
  color: var(--sidebar-text) !important;
  transform: scale(1.1);
+}
+
+.sb-nav-link-arrow {
+ margin-left: auto;
+ flex-shrink: 0;
+ font-size: 0.75rem;
+ color: #fff !important;
+ text-shadow: 0 0 1px rgba(0, 0, 0, 0.3);
 }
 
 .sb-sidenav-collapse-arrow {
@@ -708,6 +809,39 @@ footer small {
  animation: slideDownFadeIn 0.45s ease-out both;
 }
 
+/* ===== Auth pages: form & validation transitions (Register, Login, etc.) ===== */
+.form-control {
+ transition: border-color 0.25s ease, box-shadow 0.25s ease, background-color 0.2s ease;
+}
+.form-control:focus {
+ transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+.form-control.is-invalid {
+ transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+.invalid-feedback,
+.register-field-error {
+ animation: auth-field-error-fade 0.28s ease-out;
+}
+@keyframes auth-field-error-fade {
+ from { opacity: 0; transform: translateY(-4px); }
+ to { opacity: 1; transform: translateY(0); }
+}
+
+/* Register: password criteria expand/collapse and item success transition */
+.register-password-criteria-wrapper {
+ max-height: 0;
+ overflow: hidden;
+ transition: max-height 0.35s ease-out;
+}
+.register-password-criteria-wrapper.open {
+ max-height: 220px;
+ transition: max-height 0.4s ease-in-out;
+}
+.register-password-criteria-item {
+ transition: color 0.3s ease, opacity 0.25s ease;
+}
+
 /* Breadcrumb */
 .breadcrumb {
  background-color: transparent;
@@ -764,17 +898,22 @@ footer small {
  }
 
  body.sb-sidenav-toggled #layoutSidenav #layoutSidenav_nav {
- z-index: 1031; /* Higher than overlay */
+ z-index: 2070; /* Above topbar (2060) so sidebar slides over topbar on mobile */
  }
 }
 
-/* Ensure topbar always sticks to viewport */
+/* Ensure topbar always on top (above sidebar/overlay on mobile) */
 .sb-topnav {
  position: fixed !important;
  top: 0;
  left: 0;
  right: 0;
- z-index: 2050;
+ z-index: 2060 !important;
+}
+
+/* When dropdown is open, lift topbar above sidebar so dropdown is visible on mobile */
+.sb-topnav.dropdown-open {
+ z-index: 2080 !important;
 }
 
 body {
@@ -1130,7 +1269,7 @@ body.login-page-active #root {
 }
 
 .view-travel-order-modal .view-modal-approvals {
-  display: flex;
+ display: flex;
  flex-direction: column;
  gap: 0.75rem;
 }
@@ -1280,13 +1419,13 @@ body.login-page-active #root {
  width: auto;
  min-width: 4rem;
  font-size: 0.875rem;
-  font-weight: 500;
+ font-weight: 500;
  color: var(--text-secondary, #4a584a);
  background: #fff;
  border: 1px solid var(--input-border, #d4dcd4);
  border-radius: 0.375rem;
  padding: 0.25rem 1.75rem 0.25rem 0.5rem;
-  cursor: pointer;
+ cursor: pointer;
  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -1504,6 +1643,137 @@ body.login-page-active #root {
  animation: branding-shimmer 1.5s ease-in-out infinite;
 }
 
+/* ===== Logout confirm modal (TasDoneNa-client: portal + smooth open/close) ===== */
+.account-approvals-detail-overlay {
+ position: fixed;
+ inset: 0;
+ z-index: 12000;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ padding: 1rem;
+ }
+.account-approvals-detail-backdrop {
+ position: absolute;
+ inset: 0;
+ background: rgba(0, 0, 0, 0.4);
+ cursor: pointer;
+ }
+.account-approvals-detail-modal {
+ position: relative;
+ width: 100%;
+ max-width: 560px;
+ max-height: 90vh;
+ overflow: hidden;
+ display: flex;
+ flex-direction: column;
+ background: var(--background-white);
+ border-radius: 12px;
+ box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+ border: 1px solid var(--border-color);
+ }
+.account-approvals-detail-header {
+ position: relative;
+ display: flex;
+ align-items: flex-start;
+ justify-content: space-between;
+ gap: 0.75rem;
+ padding: 1rem 1.25rem;
+ border-bottom: 1px solid var(--border-color);
+ background: #f8f9fa;
+ }
+.account-approvals-detail-header-text { min-width: 0; }
+.account-approvals-detail-subtitle {
+ margin-top: 0.25rem;
+ font-size: 0.875rem;
+ color: var(--text-muted);
+ display: flex;
+ flex-wrap: wrap;
+ gap: 0.35rem;
+ }
+.account-approvals-detail-name {
+ color: var(--text-secondary);
+ font-weight: 600;
+ }
+.account-approvals-detail-body {
+ padding: 1.25rem 1.25rem;
+ overflow-y: auto;
+ flex: 1;
+ min-height: 0;
+ }
+.account-approvals-action-help {
+ font-size: 0.85rem;
+ color: var(--text-muted);
+ margin-bottom: 0.75rem;
+ }
+.account-approvals-detail-footer {
+ display: flex;
+ align-items: center;
+ justify-content: flex-end;
+ gap: 0.75rem;
+ padding: 1rem 1.25rem;
+ border-top: 1px solid var(--border-color);
+ background: #f8f9fa;
+ }
+.account-approvals-detail-close-btn {
+ min-width: 7.5rem;
+ box-shadow: none !important;
+ transform: none !important;
+ background-color: #f0f2f5 !important;
+ color: var(--text-secondary) !important;
+ border: 1px solid #cbd5e1 !important;
+ font-weight: 500;
+ }
+.account-approvals-detail-close-btn:hover {
+ background-color: #e2e8f0 !important;
+ color: var(--primary-color) !important;
+ border-color: #b4c3d4 !important;
+ }
+.logout-confirm-signout-btn {
+ background-color: var(--primary-color) !important;
+ border-color: var(--primary-color) !important;
+ color: #fff !important;
+ }
+.logout-confirm-signout-btn:hover {
+ background-color: var(--primary-dark) !important;
+ border-color: var(--primary-dark) !important;
+ color: #fff !important;
+ }
+.logout-confirm-signout-btn:disabled {
+ opacity: 0.85;
+ cursor: wait;
+ }
+.account-approvals-detail-backdrop.logout-backdrop-loading {
+ cursor: wait;
+ }
+.btn-close-custom {
+ position: absolute;
+ top: 1rem;
+ right: 1rem;
+ width: 32px;
+ height: 32px;
+ border: 1px solid transparent;
+ border-radius: 50%;
+ background-color: #f0f2f5;
+ color: var(--text-secondary);
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ font-size: 0.875rem;
+ cursor: pointer;
+ transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+ z-index: 1;
+ }
+.btn-close-custom:hover {
+ background-color: #e2e8f0;
+ border-color: #cbd5e1;
+ color: var(--primary-color);
+ }
+.btn-close-custom:focus-visible {
+ outline: none;
+ box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.16);
+ }
+
 /* SweetAlert2 z-index override for modals */
 .swal2-container-modal {
  z-index: 10002 !important;
@@ -1550,46 +1820,4 @@ body.login-page-active #root {
 }
 .Toastify__toast {
  z-index: 99999 !important;
-}
-
-/* ===== REGISTER PAGE – SMOOTH TRANSITIONS (error messages & password validation) ===== */
-@keyframes registerErrorIn {
- from {
-  opacity: 0;
-  transform: translateY(-6px);
- }
- to {
-  opacity: 1;
-  transform: translateY(0);
- }
-}
-
-.register-field-error {
- display: block;
- margin-top: 0.25rem;
- animation: registerErrorIn 0.28s ease-out;
-}
-
-/* Password criteria box: smooth expand + fade in */
-.register-password-criteria-wrapper {
- overflow: hidden;
- max-height: 0;
- opacity: 0;
- transition: max-height 0.35s ease-out, opacity 0.28s ease-out;
-}
-
-.register-password-criteria-wrapper.open {
- max-height: 140px;
- opacity: 1;
-}
-
-.register-password-criteria {
- padding: 0.5rem 1rem;
- border-radius: 6px;
- font-size: 0.85rem;
- transition: background-color 0.2s ease, border-color 0.2s ease;
-}
-
-.register-password-criteria-item {
- transition: color 0.28s ease;
 }

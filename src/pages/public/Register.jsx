@@ -18,7 +18,7 @@ import { getHomePathForUser } from '../../utils/authRouting'
 import SearchableSelect from '../../components/SearchableSelect'
 import 'react-toastify/dist/ReactToastify.css'
 import backgroundImage from '../../assets/background-image.png'
-import systemLogo from '../../assets/system_logo.png'
+import { useBranding } from '../../context/BrandingContext'
 
 const BRAND_NAME = 'ATIn e-Track System'
 
@@ -77,6 +77,7 @@ const DESIGNATION_POSITION_OPTIONS = [
 ]
 
 export default function Register() {
+  const { logoUrl, appName, authBackgroundUrl, brandingLoaded } = useBranding()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [fieldErrors, setFieldErrors] = useState({})
@@ -335,13 +336,13 @@ export default function Register() {
   }
 
   return (
-    <div className={`register-page auth-layout${isPageEntered ? ' register-page-enter' : ''}`}>
+      <div className={`register-page auth-layout${isPageEntered ? ' register-page-enter' : ''}`}>
       {/* Left panel – even 50% split, background image + overlay (same as reference) */}
       <div
         className="register-auth-left auth-left"
         style={{
           position: 'relative',
-          backgroundImage: `url(${backgroundImage})`,
+          backgroundImage: `url(${authBackgroundUrl || backgroundImage})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
@@ -362,22 +363,31 @@ export default function Register() {
       <div ref={rightPanelRef} className="register-auth-right auth-right">
         <div className="register-auth-right-inner">
           <div className="register-form-card">
-          {/* Logo */}
-          <div className="text-center mb-3">
-            <img
-              src={systemLogo}
-              alt={BRAND_NAME}
-              style={{
-                width: 100,
-                height: 100,
-                objectFit: 'contain',
-              }}
-            />
-          </div>
-
-          {step === 'form' ? (
-            <>
-              <h5
+          {/* Slider: form and OTP steps slide horizontally (same as MidTaskApp) */}
+          <div className="register-card-slider">
+            <div
+              className="register-card-track"
+              style={{ transform: step === 'otp' ? 'translateX(-50%)' : 'translateX(0)' }}
+            >
+              {/* Form pane */}
+              <div className="register-form-pane">
+                <div className="text-center mb-3">
+                  {brandingLoaded ? (
+                    <img
+                      key={logoUrl}
+                      src={logoUrl}
+                      alt={appName || BRAND_NAME}
+                      className="branding-fade-in"
+                      style={{ width: 100, height: 100, objectFit: 'contain' }}
+                    />
+                  ) : (
+                    <div
+                      className="branding-skeleton-logo"
+                      style={{ width: 100, height: 100, margin: '0 auto' }}
+                    />
+                  )}
+                </div>
+                <h5
                 className="text-center fw-bold mb-2"
                 style={{ color: theme.primary, fontSize: '1.35rem' }}
               >
@@ -807,45 +817,54 @@ export default function Register() {
                 </button>
               </form>
 
-              <p
-                className="auth-form-register-wrap text-center mb-0 mt-4"
-                style={{ fontSize: '0.9rem', fontWeight: 600, color: theme.primary }}
-              >
-                Already have an account?{' '}
-                <Link to="/login" className="auth-form-link auth-form-link--signin">
-                  Sign in here
-                </Link>
-              </p>
-            </>
-          ) : (
-            <>
-              <button
-                type="button"
-                className="btn btn-link p-0 mb-3 d-flex align-items-center gap-2"
-                style={{ color: theme.primary, fontWeight: 600, textDecoration: 'none' }}
-                onClick={() => {
-                  setStep('form')
-                  setOtpError('')
-                  setOtpDigits(['', '', '', '', '', ''])
-                }}
-              >
-                <FaArrowLeft size={16} />
-                Back to sign up
-              </button>
+                <p
+                  className="auth-form-register-wrap text-center mb-0 mt-4"
+                  style={{ fontSize: '0.9rem', fontWeight: 600, color: theme.primary }}
+                >
+                  Already have an account?{' '}
+                  <Link to="/login" className="auth-form-link auth-form-link--signin">
+                    Sign in here
+                  </Link>
+                </p>
+              </div>
 
-              <h5
-                className="text-center fw-bold mb-2"
-                style={{ color: theme.primary, fontSize: '1.35rem' }}
-              >
-                Verify your email
-              </h5>
-              <p
-                className="text-center mb-4"
-                style={{ fontSize: '0.9rem', color: theme.textSecondary }}
-              >
-                Enter the 6-digit code we sent to{' '}
-                <strong style={{ color: theme.textPrimary }}>{form.email || 'your email'}</strong>.
-              </p>
+              {/* OTP pane */}
+              <div className="register-otp-pane">
+                <div className="text-center mb-3">
+                  <img
+                    key={logoUrl}
+                    src={logoUrl}
+                    alt={BRAND_NAME}
+                    style={{ width: 100, height: 100, objectFit: 'contain' }}
+                  />
+                </div>
+                <button
+                  type="button"
+                  className="auth-form-link auth-form-link--back d-inline-flex align-items-center gap-2 mb-3 p-0 border-0 bg-transparent"
+                  style={{ color: theme.primary, fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem' }}
+                  onClick={() => {
+                    setStep('form')
+                    setOtpError('')
+                    setOtpDigits(['', '', '', '', '', ''])
+                  }}
+                >
+                  <FaArrowLeft size={16} />
+                  Back to sign up
+                </button>
+
+                <h5
+                  className="text-center fw-bold mb-2"
+                  style={{ color: theme.primary, fontSize: '1.35rem' }}
+                >
+                  Verify your email
+                </h5>
+                <p
+                  className="text-center mb-4"
+                  style={{ fontSize: '0.9rem', color: theme.textSecondary }}
+                >
+                  Enter the 6-digit code we sent to{' '}
+                  <strong style={{ color: theme.textPrimary }}>{form.email || 'your email'}</strong>.
+                </p>
 
               <form onSubmit={handleOtpVerify} className="w-100">
                 <div className="d-flex justify-content-center gap-2 mb-3 flex-wrap">
@@ -874,7 +893,7 @@ export default function Register() {
                   ))}
                 </div>
                 {otpError && (
-                  <div className="text-center text-danger mb-3 small">{otpError}</div>
+                  <div className="text-center text-danger mb-3 small register-field-error">{otpError}</div>
                 )}
 
                 <button
@@ -922,16 +941,44 @@ export default function Register() {
                   )}
                 </button>
 
-                <div className="text-center">
+                <div className="mt-2">
                   <button
                     type="button"
-                    className="btn btn-link p-0"
+                    className="w-100 py-2 fw-semibold rounded shadow-sm d-flex align-items-center justify-content-center"
+                    disabled={resendCooldown > 0 || resendLoading}
                     style={{
-                      color: theme.primary,
-                      fontSize: '0.9rem',
-                      textDecoration: 'none',
+                      backgroundColor: '#f9fafb', // light grey, non-solid look
+                      color: '#374151',
+                      fontSize: '0.95rem',
+                      borderRadius: '8px',
+                      border: '1px solid #e5e7eb', // softer grey border
+                      transition: 'all 0.3s ease-in-out',
+                      boxShadow: 'none',
+                      cursor: resendCooldown > 0 || resendLoading ? 'not-allowed' : 'pointer',
                     }}
-                    disabled={resendCooldown > 0}
+                    onMouseEnter={(e) => {
+                      if (resendCooldown === 0 && !resendLoading) {
+                        // subtle tone shift on hover, still grey and not fully solid
+                        e.currentTarget.style.backgroundColor = '#eef1f5';
+                        e.currentTarget.style.color = '#111827';
+                        e.currentTarget.style.borderColor = '#d4d7dd';
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = 'none';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = '#f9fafb';
+                      e.currentTarget.style.color = '#374151';
+                      e.currentTarget.style.borderColor = '#e5e7eb';
+                      e.currentTarget.style.boxShadow = 'none';
+                      e.currentTarget.style.transform = 'translateY(0)';
+                    }}
+                    onMouseDown={(e) => {
+                      if (resendCooldown === 0 && !resendLoading) {
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = 'none';
+                      }
+                    }}
                     onClick={handleResendOtp}
                   >
                     {resendLoading
@@ -943,17 +990,18 @@ export default function Register() {
                 </div>
               </form>
 
-              <p
-                className="auth-form-register-wrap text-center mb-0 mt-4"
-                style={{ fontSize: '0.9rem', fontWeight: 600, color: theme.primary }}
-              >
-                Already have an account?{' '}
-                <Link to="/login" className="auth-form-link auth-form-link--signin">
-                  Sign in here
-                </Link>
-              </p>
-            </>
-          )}
+                <p
+                  className="auth-form-register-wrap text-center mb-0 mt-4"
+                  style={{ fontSize: '0.9rem', fontWeight: 600, color: theme.primary }}
+                >
+                  Already have an account?{' '}
+                  <Link to="/login" className="auth-form-link auth-form-link--signin">
+                    Sign in here
+                  </Link>
+                </p>
+              </div>
+            </div>
+          </div>
           </div>
         </div>
       </div>
@@ -1079,6 +1127,22 @@ export default function Register() {
           border: 1px solid rgba(12, 138, 59, 0.12);
           padding: 2rem 1.75rem;
         }
+        /* Slide transition: form <-> OTP (same as MidTaskApp) */
+        .register-card-slider {
+          overflow: hidden;
+          width: 100%;
+        }
+        .register-card-track {
+          display: flex;
+          width: 200%;
+          transition: transform 0.4s ease-in-out;
+        }
+        .register-form-pane,
+        .register-otp-pane {
+          width: 50%;
+          min-width: 50%;
+          flex-shrink: 0;
+        }
         .register-form-select {
           display: block;
           max-width: 100%;
@@ -1128,6 +1192,46 @@ export default function Register() {
         .register-page .auth-form-link--signin:hover {
           color: #0A6B2E;
           transform: translateY(-1px);
+        }
+        .register-page .auth-form-link--back {
+          font-size: 0.9rem;
+          font-weight: 700;
+          color: #0C8A3B;
+          letter-spacing: 0.01em;
+        }
+        .register-page .auth-form-link--back:hover {
+          color: #0A6B2E;
+          transform: translateY(-1px);
+        }
+        .register-resend-btn {
+          margin-top: 0.25rem;
+          padding: 0.4rem 1.1rem;
+          border-radius: 999px;
+          border: 1px solid #0C8A3B;
+          background-color: transparent;
+          color: #0C8A3B;
+          font-size: 0.9rem;
+          font-weight: 700;
+          letter-spacing: 0.01em;
+          transition:
+            background-color 0.25s ease-in-out,
+            color 0.25s ease-in-out,
+            border-color 0.25s ease-in-out,
+            transform 0.25s ease-in-out,
+            box-shadow 0.25s ease-in-out;
+        }
+        .register-resend-btn:hover:not(:disabled) {
+          background-color: #0C8A3B;
+          color: #ffffff;
+          border-color: #0A6B2E;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(12, 138, 59, 0.25);
+        }
+        .register-resend-btn:disabled {
+          opacity: 0.75;
+          cursor: not-allowed;
+          box-shadow: none;
+          transform: none;
         }
         .register-page .auth-form-register-wrap {
           font-size: 0.9rem;

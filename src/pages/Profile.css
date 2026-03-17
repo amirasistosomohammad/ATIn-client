@@ -1,0 +1,177 @@
+/* Profile page — uses admin Settings layout/color scheme for consistency (same as Settings.css) */
+
+.profile-settings-container {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+.profile-settings-container .system-settings-form {
+  margin-top: 0;
+}
+
+.profile-settings-container .system-settings-form-group {
+  margin-bottom: 1.25rem;
+}
+
+.profile-settings-avatar-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  background: linear-gradient(
+    135deg,
+    var(--primary-color, #0d7a3a) 0%,
+    var(--primary-dark, #0a5f2d) 100%
+  );
+  color: #fff;
+  margin-bottom: 0;
+  box-shadow: 0 4px 12px rgba(13, 122, 58, 0.35);
+  flex-shrink: 0;
+}
+
+.profile-settings-avatar-placeholder {
+  font-size: 1.35rem;
+}
+
+.profile-settings-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem 1.5rem;
+}
+
+.profile-settings-form-group-readonly .profile-settings-readonly-hint {
+  font-weight: 500;
+  color: var(--text-secondary, #4c5875);
+  font-size: 0.8125rem;
+}
+
+.profile-settings-input-readonly {
+  background: var(--background-light, #f5f7fb);
+  color: var(--text-secondary, #4c5875);
+  border-color: var(--border-color, #d5dbe6);
+  cursor: default;
+}
+
+.profile-settings-input-readonly:focus {
+  border-color: var(--border-color, #d5dbe6);
+}
+
+.profile-settings-searchable-wrap .system-settings-error {
+  margin-top: 0.35rem;
+}
+
+/* ----- Tablet: same breakpoint as Settings (991.98px) ----- */
+@media (max-width: 991.98px) {
+  .profile-settings-container .system-settings-row {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-settings-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-settings-container .system-settings-header {
+    margin-bottom: 1.5rem;
+  }
+}
+
+/* ----- Mobile: match Settings 576px and improve touch/small screen ----- */
+@media (max-width: 576px) {
+  .profile-settings-container {
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+  }
+
+  /* Profile header: stack avatar above text, centered, so it aligns well on mobile */
+  .profile-settings-container .system-settings-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.75rem;
+    margin: 1rem auto 1.5rem;
+    max-width: 100%;
+    padding: 0 0.5rem;
+  }
+
+  .profile-settings-container .system-settings-header-icon-wrap.profile-settings-avatar-wrap {
+    margin-bottom: 0;
+  }
+
+  .profile-settings-container .system-settings-header-text {
+    min-width: 0;
+    width: 100%;
+    align-items: center;
+    text-align: center;
+  }
+
+  .profile-settings-container .system-settings-header-title {
+    font-size: 1.25rem;
+    margin: 0 0 0.25rem;
+  }
+
+  .profile-settings-container .system-settings-header-subtitle {
+    font-size: 0.875rem;
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+
+  .profile-settings-container .system-settings-header-desc {
+    font-size: 0.8125rem;
+    margin: 0.25rem 0 0;
+    line-height: 1.4;
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+
+  .profile-settings-container .system-settings-card {
+    padding: 1rem 1.25rem;
+  }
+
+  .profile-settings-container .system-settings-content-body {
+    min-height: 280px;
+  }
+
+  .profile-settings-container .system-settings-input {
+    max-width: none;
+  }
+
+  .profile-settings-container .system-settings-form-footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .profile-settings-container .system-settings-form-footer .system-settings-btn-primary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .profile-settings-container .system-settings-admin-note {
+    padding: 0.625rem 0.875rem;
+    font-size: 0.8125rem;
+  }
+
+  .profile-settings-container .system-settings-nav-btn {
+    padding: 0.625rem 0.875rem;
+  }
+
+  .profile-settings-container .system-settings-nav-desc {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+  }
+
+  /* Password section: input groups full width on mobile */
+  .profile-settings-container .system-settings-form .input-group {
+    flex-wrap: nowrap;
+  }
+
+  .profile-settings-container .system-settings-form .form-control {
+    min-width: 0;
+  }
+}
